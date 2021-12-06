@@ -4,13 +4,13 @@ import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf, col
 from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear, dayofweek, date_format
-
+from pyspark.sql.types import TimestampType
 
 config = configparser.ConfigParser()
 config.read('dl.cfg')
 
-os.environ['AWS_ACCESS_KEY_ID']=config['AWS_ACCESS_KEY_ID']
-os.environ['AWS_SECRET_ACCESS_KEY']=config['AWS_SECRET_ACCESS_KEY']
+os.environ['AWS_ACCESS_KEY_ID']=config['AWS']['AWS_ACCESS_KEY_ID']
+os.environ['AWS_SECRET_ACCESS_KEY']=config['AWS']['AWS_SECRET_ACCESS_KEY']
 
 
 def create_spark_session():
@@ -35,7 +35,7 @@ def process_song_data(spark, input_data, output_data):
     songs_table.write.partitionBy(['year', 'artist_id']).parquet(os.path.join(output_data, 'songs'))
 
     # extract columns to create artists table
-    artists_table = df[['artist_id', 'name', 'location', 'lattitude', 'longitude']]
+    artists_table = df[['artist_id', 'artist_name', 'location', 'lattitude', 'longitude']]
     
     # write artists table to parquet files
     artists_table.write.parquet(os.path.join(output_data, 'artists'))
@@ -81,7 +81,7 @@ def process_log_data(spark, input_data, output_data):
     song_df = spark.read.parquet(os.path.join(output_data, 'songs'))
 
     # extract columns from joined song and log datasets to create songplays table 
-    songplays_table = log_data.join(song_df, log_data['song']==song_df['title'], how='left').join('time_table', datetime.fromtimestamp(log_data['ts']/1000)==time_table['start_time'])
+    songplays_table = log_data.join(song_df, log_data['song']==song_df['title'], 'left').join('time_table', datetime.fromtimestamp(log_data['ts']/1000)==time_table['start_time'])
 
     # write songplays table to parquet files partitioned by year and month
     songplays_table.write.parquet(os.path.join(output_data, 'songplays'))
