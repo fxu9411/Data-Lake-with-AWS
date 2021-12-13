@@ -47,3 +47,9 @@ In this project, you'll apply what you've learned on Spark and data lakes to bui
 
 ## Database Schema
 ![](schema.png)
+
+
+## How to run the script
+```bash
+bash run.sh
+```
